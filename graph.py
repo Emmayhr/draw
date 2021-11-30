@@ -191,13 +191,14 @@ class Graph:
                 y_end = y_level1[i] + 0.1 * math.sin(theta_level1[i])
                 self.node_cordinary_list[level].append(
                     {'x': x_level1[i], 'y': y_level1[i], 'important': neighbor_level1.is_important_node,
-                     'ip': neighbor_level1.ip})
+                     'ip': neighbor_level1.ip, 'node': neighbor_level1})
                 self.node_drew_dict[neighbor_level1.ip] = [x_level1[i], y_level1[i], theta_level1[i]]
             edge_list = node.next_hop_edge_list[i]
             self.arrow_dict_list.append(
                 {'x_start': base_x, 'y_start': base_y,
                  'x_end': x_end, 'y_end': y_end,
-                 'edge': edge_list, 'angle': 180 * theta_level1[i] / math.pi})
+                 'edge': edge_list, 'angle': 180 * theta_level1[i] / math.pi,
+                 'start': node, 'end': neighbor_level1})
 
     # The input is the initial node, and the function is to add the second-order downstream nodes of that node to
     # the graph
@@ -205,10 +206,10 @@ class Graph:
         if node.ip not in self.node_drew_dict:
             if len(self.node_cordinary_list) >= 1:
                 self.node_cordinary_list[0].append({'x': base_x, 'y': base_y, 'important': node.is_important_node,
-                                                    'ip': node.ip})
+                                                    'ip': node.ip, 'node': node})
             else:
                 self.node_cordinary_list.append([{'x': base_x, 'y': base_y, 'important': node.is_important_node,
-                                                  'ip': node.ip}])
+                                                  'ip': node.ip, 'node': node}])
         self.node_drew_dict[node.ip] = [base_x, base_y, math.pi]
         self.add_sons_to_graph_down_flow(node, r=5)
         for node_next_level in node.next_hop_neighbor[:self.max_neighbor]:
@@ -247,13 +248,15 @@ class Graph:
                 y_start = y_level1[i]
                 self.node_cordinary_list[level].append(
                     {'x': x_level1[i], 'y': y_level1[i], 'important': neighbor_level1.is_important_node,
-                     'ip': neighbor_level1.ip})
+                     'ip': neighbor_level1.ip, 'node': neighbor_level1})
+                #node.pad_coodinary(self.node_cordinary_list[0][-1])
                 self.node_drew_dict[neighbor_level1.ip] = [x_level1[i], y_level1[i], theta_level1[i]]
             edge_list = node.last_hop_edge_list[i]
             self.arrow_dict_list.append(
                 {'x_start': x_start, 'y_start': y_start,
                  'x_end': base_x, 'y_end': base_y,
-                 'edge': edge_list, 'angle': 180 * theta_level1[i] / math.pi})
+                 'edge': edge_list, 'angle': 180 * theta_level1[i] / math.pi,
+                 'start': neighbor_level1, 'end': node})
 
     # The input is the initial node, and the function is to add the second-order upstream nodes of that node to
     # the graph
@@ -264,7 +267,8 @@ class Graph:
                                                     'ip': node.ip})
             else:
                 self.node_cordinary_list.append([{'x': base_x, 'y': base_y, 'important': node.is_important_node,
-                                                  'ip': node.ip}])
+                                                  'ip': node.ip, 'node': node}])
+            #node.pad_coodinary(self.node_cordinary_list[0][-1])
         self.node_drew_dict[node.ip] = [base_x, base_y, math.pi]
         self.add_fathers_to_graph_up_flow(node, r=5)
         for node_last_level in node.last_hop_neighbor[:self.max_neighbor]:
@@ -296,21 +300,25 @@ class Graph:
         base_x = 0
         base_y = 0
         for i in range(len(ip_list)):
+            if i < 8:
+                step = 4
+            else:
+                step = 10
             ip = ip_list[i]
             print(ip)
             if i%4 == 0:
                 x = base_x
                 y = base_y
             if i % 4 == 1:
-                x = base_x + 10
+                x = base_x + step
                 y = base_y
             if i % 4 == 2:
                 x = base_x
-                y = base_y + 10
+                y = base_y + step
             if i % 4 == 3:
-                x = base_x + 10
-                y = base_y + 10
-            base_x += 20
+                x = base_x + step
+                y = base_y + step
+            base_x += 2 * step
             self.draw_subgraph_with_node(ip, x, y)
 
 
@@ -386,10 +394,22 @@ class Graph:
         except Exception as e:
             print(e)
 
+    def adjust(self):
+        for key,node in self.node_dict.items():
+            if node.is_lonely_son():
+                son = node.next_hop_neighbor[0]
+
+                node.adjust_coodinary(son)
+
 if __name__ == "__main__":
     graph = Graph()
     graph.get_concerned_ip("concerned_ip")
     concerned_ip_alerts = graph.find_concerned_ip_in_alert()
     graph.construct_graph()
-    graph.draw_subgraph_with_nodes(concerned_ip_alerts[:10])
-    gf.offline.plot(graph.fig)
+    #graph.draw_subgraph_with_nodes(concerned_ip_alerts[:10])
+    graph.draw_subgraph_with_nodes(["98.7.212.253", "68.42.224.172", "45.60.58.189", "113.13.230.10",
+                                    "2408:8406:1860:5344:20a8:1fce:2c8e:b53f",
+                                    "2408:8406:1860:5344:44f9:2b5a:7ea9:1921", "125.222.107.71", "146.121.155.227",
+                                    "59.150.192.68", "10.9.53.54"])
+    #gf.offline.plot(graph.fig)
+    plotly.io.write_image(graph.fig, 'output_file.pdf', format='pdf')

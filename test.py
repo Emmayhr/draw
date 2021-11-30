@@ -6,10 +6,19 @@ import plotly.graph_objects as go
 
 import numpy as np
 
-a = {'hello':2, 'word':3}
-b = dict(sorted(a.items(), key=lambda e: e[1], reverse=True))
-print(b)
+a = [{'a': 1}, {'b': 2}, {'c': 3}]
+b = a[0]
+b['a'] = 3
+print(a)
 
+class test:
+    def __init__(self, x):
+        self.b = x
+
+t = test(a[0])
+t.b['a'] = 9
+print(a)
+'''
 chart_studio.tools.set_credentials_file(
     username='xiaofeichai',       # 账户名
     api_key='U4fqhGcM0emaE1ynQsxv'              # api key
@@ -74,7 +83,7 @@ fig.add_annotation(
   arrowwidth=1,
   arrowcolor='black'
 )
-
+'''
 '''
 def add_node_to_graph_up_flow(self, node, base_x=0, base_y=0, r=5, level=0, last_ip_list=[]):
     if node.ip not in self.node_drew_dict:
@@ -158,5 +167,7 @@ def add_node_to_graph_up_flow(self, node, base_x=0, base_y=0, r=5, level=0, last
         return 1
 '''
 
-gf.offline.plot(fig)
+
+
+#gf.offline.plot(fig)
 

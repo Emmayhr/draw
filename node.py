@@ -1,3 +1,6 @@
+import math
+import random
+
 from edge import Edge
 
 
@@ -10,6 +13,33 @@ class Node:
         self.next_hop_neighbor = []
         self.last_hop_neighbor = []
         self.is_important_node = is_important_node
+        self.coodinary = {}
+
+    def pad_coodinary(self, a):
+        self.coodinary = a
+        print("$$$$$$$$$$$$$$$$4")
+        print(self.coodinary)
+
+    # This is a poor father who has no son, but he has a single parent
+    def is_lonely_father(self):
+        if len(self.next_hop_neighbor) == 0:
+            if len(self.last_hop_neighbor) == 1:
+                return self.last_hop_neighbor[0]
+
+    def adjust_coodinary(self, son):
+        base_x, base_y = son.get_coodinary()
+        theta = random.randint(0, 360)
+        self.coodinary['x'] = base_x + 5 * math.cos(theta)
+        self.coodinary['y'] = base_y + 5 * math.sin(theta)
+
+    def get_coodinary(self):
+        print(self.coodinary)
+        return self.coodinary['x'], self.coodinary['y']
+    # This is a poor son who has no father, but he has a single son
+    def is_lonely_son(self):
+        if len(self.last_hop_neighbor) == 0:
+            if len(self.next_hop_neighbor) == 1:
+                return True
 
     def add_edge(self, edge: Edge):
         self.edge_list.append(edge)
